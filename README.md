@@ -77,7 +77,7 @@ python -m poetry run uvicorn main:app --app-dir src --reload
 Rodar na rede privada:
 
 ```bash
-python -m poetry run uvicorn main:app --app-dir src --reload --host 0.0.0.0
+python -m poetry run uvicorn main:app --app-dir src --reload --host 0.0.0.0 --port 8000
 ```
 
 ---

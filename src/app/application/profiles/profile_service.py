@@ -24,3 +24,13 @@ class ProfilesService:
     async def list_profiles(self, account_id: str):
         logger.info(f"Buscando todos os perfis vinculados a conta: {account_id}")
         return await self.repo.get_user_profiles(account_id)
+    
+    async def delete_movie(self, profile_id: str):
+        logger.info(f"Solicitação de exclusão para perfil ID: {profile_id}")
+        try:
+            await self.repo.delete(profile_id)
+            logger.success(f"Perfil {profile_id} removido com sucesso!")
+            return {"message": "Perfil deletado com sucesso", "id": profile_id}
+        except Exception as e:
+            logger.error(f"Erro ao deletar perfil {profile_id}: {str(e)}")
+            raise

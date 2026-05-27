@@ -25,6 +25,16 @@ async def create_user_profile(
 @router.get("/list/{account_id}")
 async def list_user_profiles(
     account_id: str,
-    service: ProfileService = Depends(get_profile_service),
+    service: ProfilesService = Depends(get_profile_service),
 ):
     return await service.list_profiles(account_id=account_id)
+
+# (DELETE) - deletar filme por id
+@router.delete('/delete/{profile_id}', status_code=204)
+async def delete_movie(
+    profile_id: str,
+    service: ProfilesService = Depends(get_profile_service),
+    #current_user: dict = Depends(get_current_user)
+):
+    await service.delete_movie(profile_id) # Vírgula removida
+    return None

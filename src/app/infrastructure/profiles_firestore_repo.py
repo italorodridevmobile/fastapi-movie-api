@@ -37,3 +37,12 @@ class FirestoreProfilesRepository(IProfileRepository):
     def _get_user_profiles_sync(self, account_id: str) -> list:
         profile_docs = self.collection.where("account_id", "==", account_id).stream()
         return [{"id": doc.id, **doc.to_dict()} for doc in profile_docs]
+    
+    async def delete(self, profile_id: str):
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, self._delete_sync, profile_id)
+    
+    def _delete_sync(self, profile_id: str):
+        doc_ref = self.collection.document(profile_id)
+        doc_ref.delete()
+        return True
