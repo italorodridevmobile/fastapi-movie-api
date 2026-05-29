@@ -1,3 +1,4 @@
+from app.api.auth.auth import get_current_user
 from app.api.schemas.profiles_schemas import ProfileCreate
 from app.infrastructure.profiles_firestore_repo import FirestoreProfilesRepository
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -13,7 +14,8 @@ def get_profile_service():
 async def create_user_profile(
     account_id: str,
     profile_data: ProfileCreate,
-    service: ProfileService = Depends(get_profile_service)
+    service: ProfilesService = Depends(get_profile_service),
+    current_user: dict = Depends(get_current_user)
 ):
     try:
         return await service.create_profile(account_id=account_id, profile_data=profile_data)
@@ -26,6 +28,7 @@ async def create_user_profile(
 async def list_user_profiles(
     account_id: str,
     service: ProfilesService = Depends(get_profile_service),
+    current_user: dict = Depends(get_current_user)
 ):
     return await service.list_profiles(account_id=account_id)
 
@@ -34,7 +37,7 @@ async def list_user_profiles(
 async def delete_movie(
     profile_id: str,
     service: ProfilesService = Depends(get_profile_service),
-    #current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
-    await service.delete_movie(profile_id) # Vírgula removida
+    await service.delete_movie(profile_id)
     return None

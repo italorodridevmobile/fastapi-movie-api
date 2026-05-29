@@ -25,7 +25,7 @@ async def add_movie(
     url_movie: str = Form(..., description="URL do trailer do filme"),
     file: UploadFile = File(...),
     service: MovieService = Depends(get_movie_service),
-    #current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     movie_create = MovieCreate(
         title=title, 
@@ -52,7 +52,7 @@ async def list_movies(
     page: int = 1, 
     limit: int = 5,
     service: MovieService = Depends(get_movie_service),
-    #current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     return await service.get_movies(page=page, limit=limit)
 
@@ -62,7 +62,8 @@ async def get_movies_by_category(
     category_id: str, 
     page: int = 1, 
     limit: int = 5, 
-    service: MovieService = Depends(get_movie_service)
+    service: MovieService = Depends(get_movie_service),
+    current_user: dict = Depends(get_current_user)
 ):
     return await service.get_movies_by_category(category_id=category_id, page=page, limit=limit)
 
@@ -78,7 +79,7 @@ async def update_movie(
     category_ids: str = Form(..., description="IDs separados por virgula Ex: id_1, id_2"),
     file: Optional[UploadFile] = File(None),
     service: MovieService = Depends(get_movie_service),
-    #current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     movie_create = MovieCreate(
         title=title,
@@ -99,7 +100,7 @@ async def update_movie(
 async def delete_movie(
     movie_id: str,
     service: MovieService = Depends(get_movie_service),
-    #current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     await service.delete_movie(movie_id) # Vírgula removida
     return None
@@ -110,7 +111,7 @@ async def patch_movie(
     movie_id: str,
     update_data: MovieUpdate,
     service: MovieService = Depends(get_movie_service),
-    #current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     return await service.patch_movie(movie_id, update_data)
 
@@ -119,7 +120,7 @@ async def patch_movie(
 async def search_movies_by_title(
     query: str,
     service: MovieService = Depends(get_movie_service),
-    #current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Pesquisa filme pelo titulo

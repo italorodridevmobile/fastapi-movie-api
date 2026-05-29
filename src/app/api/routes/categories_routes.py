@@ -17,7 +17,7 @@ def get_category_service():
 async def create_category(
     category_data: CategoryCreate,
     service: CategoriesService = Depends(get_category_service),
-    #current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     return await service.create_category(category_data)
 
@@ -25,6 +25,6 @@ async def create_category(
 @router.get('/list', response_model=List[CategoryResponse])
 async def list_categories(
     service: CategoriesService = Depends(get_category_service),
-    #current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     return await service.get_categories()
