@@ -1,85 +1,138 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock
+
+from app.api.schemas.movies_schemas import MovieCreate, MovieUpdate
 from app.application.movies.movie_service import MovieService
-from app.api.schemas.schemas import MovieCreate, MovieUpdate
+
 
 @pytest.fixture
-def mock_repo():
+def repository():
     return MagicMock()
 
+
 @pytest.fixture
-def service(mock_repo):
-    return MovieService(mock_repo)
+def service(repository):
+    return MovieService(repository)
+
 
 @pytest.mark.asyncio
-async def test_create_movie_successfully(service, mock_repo):
-    # Arrange
-    mock_repo.upload_image = AsyncMock(return_value="http://link.com/foto.jpg")
-    mock_repo.save = AsyncMock(return_value={"id": "123", "title": "Batman"})
-    movie_in = MovieCreate(title="Batman Teste", description="Descricao longa", genres=["Ação"], price=10.0)
-    
-    # Act
-    result = await service.create_new_movie(movie_in, b"bytes", "foto.jpg", MagicMock())
+async def test_create_movie(service, repository):
+    repository.upload_image = AsyncMock(
+        return_value="http://link.com/capa.jpg"
+    )
 
-    # Assert
+    repository.save = AsyncMock(
+        return_value={
+            "id": "123",
+            "title": "Batman Teste",
+        }
+    )
+
+    movie = MovieCreate(
+        title="Batman Teste",
+        description="Filme do Batman",
+        category_ids=["cat-1"],
+        price=19.90,
+        year="2024",
+        duration="2h 10min",
+        url_movie="https://youtube.com/watch?v=test",
+    )
+
+    result = await service.create_new_movie(
+        movie,
+        b"image-bytes",
+        "capa.jpg",
+        MagicMock(),
+    )
+
     assert result["id"] == "123"
-    mock_repo.upload_image.assert_called_once()
-    mock_repo.save.assert_called_once()
+    repository.upload_image.assert_called_once()
+    repository.save.assert_called_once()
+
 
 @pytest.mark.asyncio
-async def test_get_all_movies(service, mock_repo):
-    # Arrange
-    mock_repo.get_all = AsyncMock(return_value=[{"id": "1", "title": "Filme 1"}])
+async def test_get_movies(service, repository):
+    repository.get_all = AsyncMock(
+        return_value=[
+            {
+                "id": "1",
+                "title": "Filme 1",
+            }
+        ]
+    )
 
-    # Act
     result = await service.get_movies()
 
-    # Assert
     assert len(result) == 1
     assert result[0]["title"] == "Filme 1"
-    mock_repo.get_all.assert_called_once()
+
 
 @pytest.mark.asyncio
-async def test_update_movie_full(service, mock_repo):
-    # Arrange
-    mock_repo.upload_image = AsyncMock(return_value="http://new.com/foto.jpg")
-    mock_repo.update = AsyncMock(return_value={"id": "123", "title": "Novo Titulo"})
-    movie_up = MovieCreate(title="Novo Titulo", description="Nova descricao longa", genres=["Drama"], price=20.0)
+async def test_update_movie(service, repository):
+    repository.upload_image = AsyncMock(
+        return_value="http://new.com/capa.jpg"
+    )
 
-    # Act
-    result = await service.update_movie("123", movie_up, b"bytes", "nova_foto.jpg")
+    repository.update = AsyncMock(
+        return_value={
+            "id": "123",
+            "title": "Novo Titulo",
+        }
+    )
 
-    # Assert
+    movie = MovieCreate(
+        title="Novo Titulo",
+        description="Nova descrição",
+        category_ids=["cat-1"],
+        price=29.90,
+        year="2025",
+        duration="1h 50min",
+        url_movie="https://youtube.com/watch?v=novo",
+    )
+
+    result = await service.update_movie(
+        "123",
+        movie,
+        b"image-bytes",
+        "nova_capa.jpg",
+    )
+
     assert result["title"] == "Novo Titulo"
-    mock_repo.upload_image.assert_called_once()
-    mock_repo.update.assert_called_once()
+    repository.upload_image.assert_called_once()
+    repository.update.assert_called_once()
+
 
 @pytest.mark.asyncio
-async def test_patch_movie_partial(service, mock_repo):
-    # Arrange
-    # Simulando o retorno completo do banco apos o patch
-    mock_repo.update = AsyncMock(return_value={"id": "123", "title": "Batman", "price": 50.0})
-    patch_data = MovieUpdate(price=50.0)
+async def test_patch_movie(service, repository):
+    repository.update = AsyncMock(
+        return_value={
+            "id": "123",
+            "title": "Batman",
+            "price": 50.0,
+        }
+    )
 
-    # Act
-    result = await service.patch_movie("123", patch_data)
+    patch = MovieUpdate(price=50.0)
 
-    # Assert
+    result = await service.patch_movie("123", patch)
+
     assert result["price"] == 50.0
-    # Verifica se o service passou apenas o que foi enviado para o repo
-    args, _ = mock_repo.update.call_args
-    assert args[1] == {"price": 50.0} 
+
+    args, _ = repository.update.call_args
+    assert args[1] == {"price": 50.0}
+
 
 @pytest.mark.asyncio
-async def test_delete_movie_with_cleanup(service, mock_repo):
-    # Arrange
-    mock_repo.delete = AsyncMock()
-    mock_repo.delete_image = AsyncMock()
+async def test_delete_movie(service, repository):
+    repository.delete = AsyncMock()
+    repository.delete_image = AsyncMock()
 
-    # Act
-    result = await service.delete_movie("123", image_name="capa.jpg")
+    result = await service.delete_movie(
+        "123",
+        image_name="capa.jpg",
+    )
 
-    # Assert
     assert result["message"] == "Filme deletado com sucesso"
-    mock_repo.delete.assert_called_once_with("123")
-    mock_repo.delete_image.assert_called_once_with("capa.jpg")
+
+    repository.delete.assert_called_once_with("123")
+    repository.delete_image.assert_called_once_with("capa.jpg")
